@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dfindexer
+spec:
+  selector:
+    app: dfindexer
+  ports:
+  - name: http
+    port: 7006
+    targetPort: http

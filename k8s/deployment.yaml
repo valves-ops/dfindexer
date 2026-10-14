@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dfindexer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dfindexer
+  template:
+    metadata:
+      labels:
+        app: dfindexer
+    spec:
+      containers:
+      - name: dfindexer
+        image: ghcr.io/dflexy/dfindexer:1.0.3
+        ports:
+        - name: http
+          containerPort: 7006
+        env:
+        - name: PORT
+          value: "7006"
+        - name: REDIS_HOST
+          value: localhost
+        - name: FLARESOLVERR_ADDRESS
+          value: http://media-flaresolverr.media.svc.cluster.local:8191
+        - name: LOG_LEVEL
+          value: "1"
+        - name: LOG_FORMAT
+          value: console
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 40
+          periodSeconds: 30
+          timeoutSeconds: 10
+      # Cache only, so an emptyDir is enough.
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        emptyDir: {}
